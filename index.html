@@ -307,7 +307,7 @@ document.addEventListener('change',function(e){
   else if(a==='bhStatus'){S.boreholes.forEach(function(x){if(x.id===id)x.status=b.value})}
   else if(a==='bhName'){S.boreholes.forEach(function(x){if(x.id===id)x.name=b.value})}
   else if(a==='bhYield'){S.boreholes.forEach(function(x){if(x.id===id)x.yield=b.value})}
-  else if(a==='farmName'){S.farm.name=b.value||'Our Game Farm'}
+  else if(a==='farmName'){S.farm.name=b.value||'Orygos Game Farm'}
   else if(a==='lat'){S.farm.lat=parseFloat(b.value)||S.farm.lat;save();loadWeather()}
   else if(a==='lon'){S.farm.lon=parseFloat(b.value)||S.farm.lon;save();loadWeather()}
   else if(a==='cfg'){S.cfg[b.getAttribute('data-k')]=parseFloat(b.value)||0}
