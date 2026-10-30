@@ -103,7 +103,7 @@ function nice(d){return new Date(d+'T12:00:00').toLocaleDateString('en-ZA',{day:
 function defaults(){
   var t=today();
   return {
-    farm:{name:'Our Game Farm',lat:-32.6429,lon:21.9451},
+    farm:{name:'Orygos Game Farm',lat:-32.6429,lon:21.9451},
     cfg:{tanks:20,tankL:5000,dailyUse:8000,gemsbokKg:4,springbokKg:1.5,growDays:7,yieldX:6},
     boreholes:[1,2,3,4].map(function(i){return {id:'b'+i,name:'Borehole '+i,status:'ok',yield:''}}),
     water:[{id:uid(),d:addDays(t,-2),pct:70,note:'Example reading',ex:1}],
