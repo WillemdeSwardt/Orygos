@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en-ZA"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2C6B5A"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg" type="image/svg+xml"><style>:root{color-scheme:light}body{margin:0;font-size:14px}</style>
+<title>Farm Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single column field notebook, bottom tab bar, cards only where an object is actionable. */
+:root{
+  --bg:#E6EAE7; --surface:#F6F8F6; --ink:#1B2826; --muted:#5B6B67; --line:#CBD3CF;
+  --accent:#2C6B5A; --accent-ink:#FFFFFF; --ochre:#A8660F; --ochre-bg:#F3E3C4;
+  --good:#2C6B5A; --good-bg:#D5E8DF; --warn:#9A5B00; --warn-bg:#F4E2BC; --crit:#A3281F; --crit-bg:#F3D3CF;
+  --display:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121A19; --surface:#1B2624; --ink:#E4EBE8; --muted:#93A5A0; --line:#2F3E3B;
+  --accent:#6BC2A8; --accent-ink:#0F1D1A; --ochre:#E2A24B; --ochre-bg:#3A2E15;
+  --good:#6BC2A8; --good-bg:#183A31; --warn:#E8B04F; --warn-bg:#3B2D10; --crit:#F08C82; --crit-bg:#431B17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121A19; --surface:#1B2624; --ink:#E4EBE8; --muted:#93A5A0; --line:#2F3E3B;
+  --accent:#6BC2A8; --accent-ink:#0F1D1A; --ochre:#E2A24B; --ochre-bg:#3A2E15;
+  --good:#6BC2A8; --good-bg:#183A31; --warn:#E8B04F; --warn-bg:#3B2D10; --crit:#F08C82; --crit-bg:#431B17; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 84px}
+.wrap{max-width:720px;margin:0 auto}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding:18px 0 10px}
+h1{font:800 26px/1.05 var(--display);margin:0;letter-spacing:-.01em}
+h2{font:700 19px/1.2 var(--display);margin:0 0 10px;text-wrap:balance}
+h3{font:600 12px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:22px 0 8px}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+section{padding-top:6px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;margin:0 0 12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grow{flex:1;min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+.kpi{border-top:2px solid var(--line);padding:8px 2px 0}
+.kpi b{display:block;font:500 24px/1.15 var(--mono);font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;font:500 11px/1 var(--mono);padding:4px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.05em}
+.pill.good{background:var(--good-bg);color:var(--good)} .pill.warn{background:var(--warn-bg);color:var(--warn)} .pill.crit{background:var(--crit-bg);color:var(--crit)} .pill.mute{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.alert{display:flex;gap:10px;padding:10px 12px;border-radius:8px;margin:0 0 8px;border-left:4px solid var(--line);background:var(--surface)}
+.alert.warn{border-color:var(--warn);background:var(--warn-bg)} .alert.crit{border-color:var(--crit);background:var(--crit-bg)} .alert.good{border-color:var(--good);background:var(--good-bg)}
+.alert b{display:block;font-weight:600}
+.alert small{color:var(--muted)}
+.days{display:grid;grid-template-columns:repeat(7,minmax(46px,1fr));gap:6px;overflow-x:auto}
+.day{text-align:center;padding:8px 2px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:12px}
+.day b{display:block;font:500 14px var(--mono)} .day i{font-style:normal;color:var(--muted);display:block;font-family:var(--mono);font-size:11px}
+.day.hot b{color:var(--crit)} .day.cold b{color:var(--accent)} .day.wet{border-color:var(--accent)}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px 9px;width:100%;min-height:40px}
+textarea{min-height:90px;font:12px/1.4 var(--mono)}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;align-items:end}
+button{font:600 14px var(--body);border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:7px;padding:9px 14px;min-height:40px;cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)} button.danger{background:transparent;color:var(--crit);border-color:var(--crit)}
+button.small{min-height:32px;padding:5px 10px;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;padding:6px 8px 6px 0;border-bottom:1px solid var(--line)}
+td{padding:8px 8px 8px 0;border-bottom:1px solid var(--line);vertical-align:top;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.ex{font:500 10px var(--mono);color:var(--ochre);background:var(--ochre-bg);padding:2px 5px;border-radius:4px;margin-left:6px;text-transform:uppercase}
+.note{font-size:13px;color:var(--muted)}
+.check{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.check input{width:20px;min-height:20px;margin-top:2px;accent-color:var(--accent)}
+.done{text-decoration:line-through;color:var(--muted)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));z-index:5}
+nav.tabs .in{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;width:100%;max-width:720px}
+nav.tabs button{background:transparent;border:0;color:var(--muted);font:500 12px var(--body);padding:8px 2px;min-height:44px;border-radius:7px}
+nav.tabs button[aria-current="true"]{color:var(--accent);background:var(--bg);font-weight:600}
+.spark{width:100%;height:70px;display:block}
+@media (prefers-reduced-motion:no-preference){section{animation:in .18s ease-out}@keyframes in{from{opacity:.4;transform:translateY(3px)}}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="farmName">Farm Desk</h1>
+      <p class="sub" id="dateLine"></p>
+    </div>
+    <span class="pill mute" id="netPill">…</span>
+  </header>
+  <main id="view"></main>
+</div>
+<nav class="tabs" aria-label="Sections"><div class="in" id="tabs"></div></nav>
+
+<script>
+(function(){
+'use strict';
+var KEY='farm-desk-v1';
+var TABS=[['today','Today'],['water','Water'],['feed','Feed'],['game','Game'],['land','Land'],['more','More']];
+var tab='today', weather=null, wErr='';
+
+function iso(d){return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function today(){return iso(new Date())}
+function addDays(s,n){var d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return iso(d)}
+function diff(a,b){return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function uid(){return Math.random().toString(36).slice(2,9)}
+function fmt(n){return Math.round(n).toLocaleString('en-ZA').replace(/ /g,' ')}
+function nice(d){return new Date(d+'T12:00:00').toLocaleDateString('en-ZA',{day:'numeric',month:'short'})}
+
+function defaults(){
+  var t=today();
+  return {
+    farm:{name:'Our Game Farm',lat:-32.6429,lon:21.9451},
+    cfg:{tanks:20,tankL:5000,dailyUse:8000,gemsbokKg:4,springbokKg:1.5,growDays:7,yieldX:6},
+    boreholes:[1,2,3,4].map(function(i){return {id:'b'+i,name:'Borehole '+i,status:'ok',yield:''}}),
+    water:[{id:uid(),d:addDays(t,-2),pct:70,note:'Example reading',ex:1}],
+    herds:[{sp:'Gemsbok',n:0},{sp:'Springbok',n:0}],
+    gameLog:[],
+    fodder:[{id:uid(),sow:addDays(t,-3),seed:25,days:7,done:false,out:0,ex:1}],
+    stock:0,
+    blocks:[{id:'v1',name:'Merlot',type:'vine'},{id:'o1',name:'Fruit trees',type:'orchard'}],
+    work:[{id:uid(),d:addDays(t,-4),block:'v1',type:'Irrigation',note:'Example entry',ex:1}],
+    tasks:[{id:uid(),text:'Check pump and float valve on Borehole 1',due:addDays(t,1),done:false,ex:1}]
+  };
+}
+var S;
+function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);var d=defaults();for(var k in d){if(!(k in o))o[k]=d[k]}S=o;return}}catch(e){}S=defaults()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- weather ---------- */
+function wUrl(){
+  return 'https://api.open-meteo.com/v1/forecast?latitude='+S.farm.lat+'&longitude='+S.farm.lon+
+  '&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,precipitation'+
+  '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_gusts_10m_max,et0_fao_evapotranspiration,relative_humidity_2m_min'+
+  '&timezone=Africa%2FJohannesburg&forecast_days=7&wind_speed_unit=kmh';
+}
+function loadWeather(){
+  try{var c=JSON.parse(localStorage.getItem(KEY+'-wx')||'null');if(c)weather=c}catch(e){}
+  if(!navigator.onLine){wErr='Offline. Showing the last saved forecast.';draw();return}
+  fetch(wUrl()).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
+    weather={at:Date.now(),j:j};wErr='';
+    try{localStorage.setItem(KEY+'-wx',JSON.stringify(weather))}catch(e){}
+    draw();
+  }).catch(function(){wErr=weather?'Could not refresh. Showing the last saved forecast.':'Forecast not available here. It loads when the app runs from its own web address with internet.';draw()});
+}
+function alerts(){
+  var out=[];if(!weather)return out;var d=weather.j.daily;if(!d)return out;
+  d.time.forEach(function(t,i){
+    var lab=i===0?'Today':nice(t), tx=d.temperature_2m_max[i], tn=d.temperature_2m_min[i], p=d.precipitation_sum[i], g=d.wind_gusts_10m_max[i], rh=d.relative_humidity_2m_min?d.relative_humidity_2m_min[i]:null;
+    if(tn<=0)out.push({l:'crit',t:'Frost '+lab,s:'Low of '+tn.toFixed(1)+'°C. Vines and fruit blossom are at risk. Consider frost protection tonight.'});
+    else if(tn<=2)out.push({l:'warn',t:'Near-frost '+lab,s:'Low of '+tn.toFixed(1)+'°C. Watch young growth on the vines.'});
+    if(tx>=40)out.push({l:'crit',t:'Extreme heat '+lab,s:'High of '+tx.toFixed(0)+'°C. Check every water point and tank float. Irrigate early.'});
+    else if(tx>=36)out.push({l:'warn',t:'Heat '+lab,s:'High of '+tx.toFixed(0)+'°C. Game will drink more. Check trough levels.'});
+    if(p>=25)out.push({l:'crit',t:'Heavy rain '+lab,s:fmt(p)+' mm forecast. Check roads, low water crossings and fodder trays.'});
+    else if(p>=8)out.push({l:'good',t:'Useful rain '+lab,s:fmt(p)+' mm forecast. Hold irrigation and catch what you can.'});
+    if(g>=60)out.push({l:'crit',t:'Strong wind '+lab,s:'Gusts to '+fmt(g)+' km/h. Secure shade cloth, trellis and loose roofing.'});
+    else if(g>=45)out.push({l:'warn',t:'Windy '+lab,s:'Gusts to '+fmt(g)+' km/h.'});
+    if(tx>=30&&g>=35&&rh!=null&&rh<=25&&p<1)out.push({l:'crit',t:'Veld fire danger '+lab,s:'Hot, dry and windy ('+tx.toFixed(0)+'°C, humidity down to '+fmt(rh)+'%). No burning. Check fire breaks and keep water ready.'});
+  });
+  return out;
+}
+function rainWeek(){return weather&&weather.j.daily?weather.j.daily.precipitation_sum.reduce(function(a,b){return a+b},0):null}
+
+/* ---------- derived numbers ---------- */
+function capL(){return S.cfg.tanks*S.cfg.tankL}
+function lastWater(){var w=S.water.slice().sort(function(a,b){return a.d<b.d?1:-1});return w[0]||null}
+function dailyFeed(){var h={};S.herds.forEach(function(x){h[x.sp]=x.n});return (h.Gemsbok||0)*S.cfg.gemsbokKg+(h.Springbok||0)*S.cfg.springbokKg}
+function totalAnimals(){return S.herds.reduce(function(a,h){return a+h.n},0)}
+
+function spark(vals){
+  if(vals.length<2)return '<p class="note">Log at least two readings to see the trend.</p>';
+  var w=300,h=70,pad=6,mx=100,mn=0,pts=vals.map(function(v,i){return [pad+i*(w-2*pad)/(vals.length-1),h-pad-(v-mn)/(mx-mn)*(h-2*pad)]});
+  var line=pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' ');
+  var area='M'+pts[0][0]+','+(h-pad)+' L'+line.replace(/ /g,' L')+' L'+pts[pts.length-1][0]+','+(h-pad)+' Z';
+  var last=pts[pts.length-1];
+  return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Tank level trend"><line x1="'+pad+'" x2="'+(w-pad)+'" y1="'+(h-pad-(25/100)*(h-2*pad))+'" y2="'+(h-pad-(25/100)*(h-2*pad))+'" stroke="var(--line)" stroke-dasharray="3 3"/><path d="'+area+'" fill="var(--good-bg)"/><polyline points="'+line+'" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="'+last[0]+'" cy="'+last[1]+'" r="4" fill="var(--accent)"/></svg>';
+}
+
+/* ---------- views ---------- */
+function exTag(x){return x.ex?'<span class="ex">example</span>':''}
+function vToday(){
+  var a=alerts(), h='';
+  var cur=weather&&weather.j.current;
+  h+='<section><h3>Right now</h3>';
+  if(cur){
+    h+='<div class="kpis"><div class="kpi"><b>'+cur.temperature_2m.toFixed(0)+'°C</b><span>Temperature</span></div><div class="kpi"><b>'+fmt(cur.relative_humidity_2m)+'%</b><span>Humidity</span></div><div class="kpi"><b>'+fmt(cur.wind_gusts_10m)+' km/h</b><span>Gusts</span></div><div class="kpi"><b>'+rainWeek().toFixed(0)+' mm</b><span>Rain, next 7 days</span></div></div>';
+  }
+  if(wErr)h+='<p class="note">'+esc(wErr)+'</p>';
+  if(weather)h+='<p class="note">Forecast saved '+new Date(weather.at).toLocaleString('en-ZA',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' for '+S.farm.lat.toFixed(3)+', '+S.farm.lon.toFixed(3)+'</p>';
+  h+='<h3>Needs attention</h3>';
+  var items=[];
+  a.forEach(function(x){items.push(x)});
+  var lw=lastWater();
+  if(lw){var L=lw.pct/100*capL(),days=L/Math.max(1,S.cfg.dailyUse);if(days<5)items.push({l:'crit',t:'Water is low',s:'About '+days.toFixed(1)+' days of stored water at '+fmt(S.cfg.dailyUse)+' L a day.'});else if(days<10)items.push({l:'warn',t:'Water getting low',s:'About '+days.toFixed(0)+' days of stored water.'})}
+  S.fodder.forEach(function(b){if(!b.done){var r=diff(today(),addDays(b.sow,b.days));if(r<=0)items.push({l:'good',t:'Fodder batch ready',s:'Sown '+nice(b.sow)+'. Harvest it in the Feed tab.'})}});
+  var need=dailyFeed();if(need>0&&S.stock/need<3)items.push({l:'warn',t:'Fodder stock under 3 days',s:'On hand '+fmt(S.stock)+' kg against '+fmt(need)+' kg a day.'});
+  S.tasks.forEach(function(t){if(!t.done&&t.due&&t.due<=today())items.push({l:t.due<today()?'crit':'warn',t:(t.due<today()?'Overdue: ':'Due today: ')+t.text,s:''})});
+  S.boreholes.forEach(function(b){if(b.status!=='ok')items.push({l:'crit',t:b.name+' is '+b.status,s:'Update its status when fixed.'})});
+  if(!items.length)h+='<div class="alert good"><div><b>Nothing urgent</b><small>No weather alerts and no overdue jobs.</small></div></div>';
+  items.forEach(function(x){h+='<div class="alert '+x.l+'"><div><b>'+esc(x.t)+'</b>'+(x.s?'<small>'+esc(x.s)+'</small>':'')+'</div></div>'});
+  if(weather&&weather.j.daily){
+    var d=weather.j.daily;h+='<h3>Seven days</h3><div class="days">';
+    d.time.forEach(function(t,i){h+='<div class="day'+(d.temperature_2m_max[i]>=36?' hot':'')+(d.temperature_2m_min[i]<=2?' cold':'')+(d.precipitation_sum[i]>=1?' wet':'')+'"><i>'+(i===0?'Today':new Date(t+'T12:00:00').toLocaleDateString('en-ZA',{weekday:'short'}))+'</i><b>'+d.temperature_2m_max[i].toFixed(0)+'°</b><i>'+d.temperature_2m_min[i].toFixed(0)+'°</i><i>'+(d.precipitation_sum[i]>=1?d.precipitation_sum[i].toFixed(0)+'mm':'dry')+'</i></div>'});
+    h+='</div>';
+    var et=d.et0_fao_evapotranspiration;if(et)h+='<p class="note">Crop water demand (ET₀) averages '+(et.reduce(function(a,b){return a+b},0)/et.length).toFixed(1)+' mm a day this week. Use it to size vine and orchard irrigation.</p>';
+  }
+  h+='<h3>Jobs</h3><div class="card">';
+  var ts=S.tasks.slice().sort(function(a,b){return (a.done-b.done)||((a.due||'9')<(b.due||'9')?-1:1)});
+  if(!ts.length)h+='<p class="note">No jobs yet.</p>';
+  ts.forEach(function(t){h+='<div class="check"><input type="checkbox" id="t'+t.id+'" data-act="toggleTask" data-id="'+t.id+'"'+(t.done?' checked':'')+'><label for="t'+t.id+'" class="grow'+(t.done?' done':'')+'" style="margin:0;color:inherit;font-size:15px">'+esc(t.text)+exTag(t)+(t.due?'<br><span class="note">Due '+nice(t.due)+'</span>':'')+'</label><button class="ghost small" data-act="delTask" data-id="'+t.id+'" aria-label="Remove job">Remove</button></div>'});
+  h+='<form data-form="task" class="f" style="margin-top:12px"><div style="grid-column:1/-1"><label for="tx">New job</label><input id="tx" required placeholder="e.g. Service pump on borehole 3"></div><div><label for="td">Due</label><input id="td" type="date"></div><div><button>Add job</button></div></form></div></section>';
+  return h;
+}
+function vWater(){
+  var lw=lastWater(),cap=capL(),h='<section><h2>Water</h2>';
+  var L=lw?lw.pct/100*cap:0,days=lw?L/Math.max(1,S.cfg.dailyUse):0;
+  h+='<div class="kpis"><div class="kpi"><b>'+(lw?lw.pct+'%':'–')+'</b><span>Tanks full</span></div><div class="kpi"><b>'+fmt(L)+' L</b><span>Stored of '+fmt(cap)+' L</span></div><div class="kpi"><b>'+(lw?days.toFixed(1):'–')+'</b><span>Days left at '+fmt(S.cfg.dailyUse)+' L/day</span></div></div>';
+  var vals=S.water.slice().sort(function(a,b){return a.d<b.d?-1:1}).slice(-20).map(function(x){return x.pct});
+  h+='<div class="card">'+spark(vals)+'<p class="note" style="margin:6px 0 0">Dashed line marks 25%.</p></div>';
+  h+='<form data-form="water" class="card f"><div><label for="wp">Tank level, % full (all '+S.cfg.tanks+' tanks)</label><input id="wp" type="number" min="0" max="100" step="1" required></div><div><label for="wd">Date</label><input id="wd" type="date" value="'+today()+'"></div><div style="grid-column:1/-1"><label for="wn">Note (rain, pump hours, leak)</label><input id="wn"></div><div><button>Log reading</button></div></form>';
+  h+='<h3>Boreholes</h3>';
+  S.boreholes.forEach(function(b){h+='<div class="card"><div class="f"><div><label for="bn'+b.id+'">Name</label><input id="bn'+b.id+'" data-act="bhName" data-id="'+b.id+'" value="'+esc(b.name)+'"></div><div><label for="bs'+b.id+'">Status</label><select id="bs'+b.id+'" data-act="bhStatus" data-id="'+b.id+'">'+['ok','pumping','low yield','fault','dry'].map(function(s){return '<option'+(b.status===s?' selected':'')+'>'+s+'</option>'}).join('')+'</select></div><div><label for="by'+b.id+'">Yield, L/hour</label><input id="by'+b.id+'" type="number" min="0" data-act="bhYield" data-id="'+b.id+'" value="'+esc(b.yield)+'"></div></div></div>'});
+  var sum=S.boreholes.reduce(function(a,b){return a+(+b.yield||0)},0);
+  if(sum)h+='<p class="note">Combined yield '+fmt(sum)+' L/hour. Filling the tanks from empty takes about '+(cap/sum).toFixed(1)+' pumping hours.</p>';
+  h+='<h3>Readings</h3><div class="scroll"><table><tr><th>Date</th><th>Level</th><th>Note</th><th></th></tr>';
+  S.water.slice().sort(function(a,b){return a.d<b.d?1:-1}).slice(0,12).forEach(function(w){h+='<tr><td>'+nice(w.d)+'</td><td>'+w.pct+'%</td><td>'+esc(w.note)+exTag(w)+'</td><td><button class="ghost small" data-act="delWater" data-id="'+w.id+'">Remove</button></td></tr>'});
+  h+='</table></div></section>';return h;
+}
+function vFeed(){
+  var need=dailyFeed(),c=S.cfg,h='<section><h2>Fodder</h2>';
+  h+='<div class="kpis"><div class="kpi"><b>'+fmt(S.stock)+' kg</b><span>Fodder on hand</span></div><div class="kpi"><b>'+fmt(need)+' kg</b><span>Needed per day</span></div><div class="kpi"><b>'+(need?(S.stock/need).toFixed(1):'–')+'</b><span>Days of fodder</span></div></div>';
+  if(need)h+='<p class="note">To keep up, sow about '+(need/c.yieldX).toFixed(1)+' kg of barley seed every day (about '+(need*c.growDays/c.yieldX).toFixed(0)+' kg of seed in the trays at any time). Staggering one batch a day gives a steady daily harvest.</p>';
+  else h+='<p class="note">Enter your herd counts in the Game tab and the app works out the daily fodder need.</p>';
+  h+='<form data-form="batch" class="card f"><div><label for="bs1">Sow date</label><input id="bs1" type="date" value="'+today()+'"></div><div><label for="bk">Barley seed, kg</label><input id="bk" type="number" min="0" step="0.5" required></div><div><label for="bd">Grow days</label><input id="bd" type="number" min="4" max="14" value="'+c.growDays+'"></div><div><button>Start batch</button></div></form>';
+  h+='<h3>Batches</h3>';
+  var bs=S.fodder.slice().sort(function(a,b){return a.sow<b.sow?1:-1});
+  if(!bs.length)h+='<p class="note">No batches yet.</p>';
+  bs.forEach(function(b){var r=diff(today(),addDays(b.sow,b.days)),est=b.seed*c.yieldX;
+    h+='<div class="card"><div class="row"><div class="grow"><b>'+nice(b.sow)+' · '+b.seed+' kg seed</b>'+exTag(b)+'<br><span class="note">Expected '+fmt(est)+' kg fodder</span></div>'+
+    (b.done?'<span class="pill mute">Harvested</span>':(r<=0?'<span class="pill good">Ready</span>':'<span class="pill warn">'+r+' d to go</span>'))+
+    (b.done?'':'<button class="small" data-act="harvest" data-id="'+b.id+'">Harvest</button>')+
+    '<button class="ghost small" data-act="delBatch" data-id="'+b.id+'">Remove</button></div></div>'});
+  h+='<form data-form="feedout" class="card f"><div><label for="fo">Fed out today, kg</label><input id="fo" type="number" min="0" step="0.5" required></div><div><button class="ghost">Subtract from stock</button></div></form>';
+  h+='</section>';return h;
+}
+function vGame(){
+  var h='<section><h2>Game</h2><div class="kpis">';
+  S.herds.forEach(function(x){h+='<div class="kpi"><b>'+x.n+'</b><span>'+esc(x.sp)+'</span></div>'});
+  h+='<div class="kpi"><b>'+totalAnimals()+'</b><span>Total</span></div></div>';
+  var tank=S.cfg.dailyUse;
+  h+='<form data-form="game" class="card f"><div><label for="gs">Species</label><select id="gs">'+S.herds.map(function(x){return '<option>'+esc(x.sp)+'</option>'}).join('')+'</select></div><div><label for="gt">Event</label><select id="gt"><option value="set">Count (set total)</option><option value="+">Birth / bought</option><option value="-">Death / sold / culled</option></select></div><div><label for="gn">Number</label><input id="gn" type="number" min="0" required></div><div><label for="gd">Date</label><input id="gd" type="date" value="'+today()+'"></div><div style="grid-column:1/-1"><label for="gm">Note (cause, camp, buyer)</label><input id="gm"></div><div><button>Save</button></div></form>';
+  h+='<h3>Log</h3><div class="scroll"><table><tr><th>Date</th><th>Species</th><th>Event</th><th>Note</th></tr>';
+  S.gameLog.slice().sort(function(a,b){return a.d<b.d?1:-1}).slice(0,15).forEach(function(g){h+='<tr><td>'+nice(g.d)+'</td><td>'+esc(g.sp)+'</td><td>'+esc(g.label)+'</td><td>'+esc(g.note)+'</td></tr>'});
+  h+='</table></div>';
+  if(!S.gameLog.length)h+='<p class="note">Start with a Count entry for each species. Later births and losses adjust the totals.</p>';
+  h+='<h3>Pressure on the veld</h3><p class="note">When the forecast shows little rain and fodder stock is short, the usual levers are reducing numbers early, moving animals between camps and increasing fodder trays. Keep your own stocking-rate figures from your extension officer or ecologist next to these counts.</p></section>';return h;
+}
+var VINE=['Dry weeks: irrigate on soil moisture. Watch for ripening.','Harvest window opens for early cultivars. Sample sugars often.','Merlot harvest usually runs Feb to Mar. Pick by taste and sugar.','After harvest: water well so vines store reserves before leaf fall.','Leaf fall. Clean up, record yields.','Pruning starts.','Pruning. Frost danger is highest at night.','Finish pruning. Watch for early budbreak.','Budbreak. Frost watch every night.','Shoot growth. Scout for powdery mildew. Thin shoots.','Flowering and set. Canopy management. Avoid water stress.','Berry set. Plan irrigation around the heat.'];
+var FRUIT=['Heat: deep, less frequent irrigation. Mulch.','Harvest of late summer fruit. Check for fruit fly.','Harvest. Pick and cool fast.','Post-harvest feeding and irrigation.','Leaf drop. Clean up fallen fruit.','Dormant pruning starts.','Pruning. Plan new plantings.','Finish pruning. Blossom approaching.','Blossom. Frost watch.','Fruit set. Thin if heavy. Scout for pests.','Thin fruit. Keep moisture steady.','Heat stress begins. Irrigate early morning.'];
+function vLand(){
+  var m=new Date().getMonth(),h='<section><h2>Vines and orchard</h2>';
+  h+='<div class="card"><b>This month</b><p style="margin:6px 0 4px"><span class="pill mute">Merlot</span> '+VINE[m]+'</p><p style="margin:4px 0 0"><span class="pill mute">Fruit</span> '+FRUIT[m]+'</p><p class="note" style="margin:8px 0 0">General guide for the Southern Hemisphere. Confirm timing for your cultivars with your viticulturist or advisor.</p></div>';
+  var a=alerts().filter(function(x){return /Frost|Heat|Heavy rain|Strong wind|Near-frost/.test(x.t)});
+  a.slice(0,3).forEach(function(x){h+='<div class="alert '+x.l+'"><div><b>'+esc(x.t)+'</b><small>'+esc(x.s)+'</small></div></div>'});
+  h+='<form data-form="work" class="card f"><div><label for="wb">Block</label><select id="wb">'+S.blocks.map(function(b){return '<option value="'+b.id+'">'+esc(b.name)+'</option>'}).join('')+'</select></div><div><label for="wt">Work</label><select id="wt">'+['Irrigation','Spray','Fertiliser','Pruning','Harvest','Scouting','Other'].map(function(x){return '<option>'+x+'</option>'}).join('')+'</select></div><div><label for="wdt">Date</label><input id="wdt" type="date" value="'+today()+'"></div><div style="grid-column:1/-1"><label for="wnn">Details (product, dose, hours, kg picked)</label><input id="wnn"></div><div><button>Log work</button></div></form>';
+  h+='<h3>Record</h3><div class="scroll"><table><tr><th>Date</th><th>Block</th><th>Work</th><th>Details</th><th></th></tr>';
+  S.work.slice().sort(function(a,b){return a.d<b.d?1:-1}).slice(0,15).forEach(function(w){var b=S.blocks.filter(function(x){return x.id===w.block})[0];h+='<tr><td>'+nice(w.d)+'</td><td>'+esc(b?b.name:'')+'</td><td>'+esc(w.type)+'</td><td>'+esc(w.note)+exTag(w)+'</td><td><button class="ghost small" data-act="delWork" data-id="'+w.id+'">Remove</button></td></tr>'});
+  h+='</table></div><p class="note">Spray records (product, date, dose) are what an export or wine-industry audit asks for. Keep them complete.</p></section>';return h;
+}
+function vMore(){
+  var c=S.cfg,h='<section><h2>Settings and backup</h2>';
+  h+='<div class="card f"><div style="grid-column:1/-1"><label for="fn">Farm name</label><input id="fn" data-act="farmName" value="'+esc(S.farm.name)+'"></div><div><label for="la">Latitude</label><input id="la" type="number" step="0.0001" data-act="lat" value="'+S.farm.lat+'"></div><div><label for="lo">Longitude</label><input id="lo" type="number" step="0.0001" data-act="lon" value="'+S.farm.lon+'"></div></div>';
+  h+='<div class="card f">'+[['tanks','Tanks'],['tankL','Litres per tank'],['dailyUse','Water use, L per day'],['gemsbokKg','Fodder per gemsbok, kg/day'],['springbokKg','Fodder per springbok, kg/day'],['growDays','Fodder grow days'],['yieldX','Fodder kg per kg seed']].map(function(p){return '<div><label for="c_'+p[0]+'">'+p[1]+'</label><input id="c_'+p[0]+'" type="number" step="any" min="0" data-act="cfg" data-k="'+p[0]+'" value="'+c[p[0]]+'"></div>'}).join('')+'</div>';
+  h+='<p class="note">Fodder rates and yield are starting guesses. Replace them with what you measure on the farm.</p>';
+  h+='<h3>Backup</h3><div class="card"><p class="note" style="margin-top:0">Everything is stored on this device. Copy a backup now and then, and paste it on another phone to move your records.</p><div class="row"><button data-act="copy">Copy backup</button><button class="ghost" data-act="restore">Restore from box</button><button class="danger" data-act="clearEx">Clear examples</button></div><label for="bk" style="margin-top:10px">Backup text</label><textarea id="bk" spellcheck="false"></textarea><p class="note" id="bkMsg"></p></div>';
+  h+='<h3>Ideas for later</h3><div class="card"><ul style="margin:0;padding-left:18px"><li>Rain gauge log by camp, compared with the forecast</li><li>Camp rotation and veld condition scoring</li><li>Game census and cull quota planner</li><li>Solar and battery log (state of charge, pump runtime)</li><li>Fence and road inspection checklists</li><li>Staff roster, vehicle and equipment service log</li><li>Income, costs and harvest tonnage for vines and fruit</li><li>SMS or WhatsApp alerts to the farm team</li></ul></div></section>';
+  return h;
+}
+var VIEWS={today:vToday,water:vWater,feed:vFeed,game:vGame,land:vLand,more:vMore};
+
+function draw(){
+  var v=document.getElementById('view'),act=document.activeElement;
+  var keep=act&&act.id&&/^(bk|fn|la|lo|c_|bn|by)/.test(act.id);
+  if(keep&&act.tagName!=='BUTTON')return; /* don't redraw while typing in a live-saved field */
+  v.innerHTML=VIEWS[tab]();
+  document.getElementById('tabs').innerHTML=TABS.map(function(t){return '<button data-tab="'+t[0]+'"'+(t[0]===tab?' aria-current="true"':'')+'>'+t[1]+'</button>'}).join('');
+  document.getElementById('farmName').textContent=S.farm.name;
+  document.getElementById('dateLine').textContent=new Date().toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('netPill').textContent=navigator.onLine?'Online':'Offline';
+}
+function go(t){tab=t;draw();window.scrollTo(0,0)}
+
+/* ---------- events ---------- */
+function val(id){var e=document.getElementById(id);return e?e.value:''}
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-tab]');if(t){go(t.getAttribute('data-tab'));return}
+  var b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT'||b.tagName==='SELECT')return;
+  var a=b.getAttribute('data-act'),id=b.getAttribute('data-id');
+  if(a==='delTask')S.tasks=S.tasks.filter(function(x){return x.id!==id});
+  else if(a==='delWater')S.water=S.water.filter(function(x){return x.id!==id});
+  else if(a==='delBatch')S.fodder=S.fodder.filter(function(x){return x.id!==id});
+  else if(a==='delWork')S.work=S.work.filter(function(x){return x.id!==id});
+  else if(a==='harvest'){S.fodder.forEach(function(x){if(x.id===id&&!x.done){x.done=true;S.stock+=x.seed*S.cfg.yieldX}})}
+  else if(a==='copy'){var txt=JSON.stringify(S),ta=document.getElementById('bk'),m=document.getElementById('bkMsg');ta.value=txt;ta.select();
+    var ok=function(){m.textContent='Backup copied. Paste it into a note or message to yourself.'},no=function(){m.textContent='Select the text in the box and copy it.'};
+    try{navigator.clipboard.writeText(txt).then(ok,no)}catch(x){no()};return}
+  else if(a==='restore'){var raw=val('bk').trim(),m2=document.getElementById('bkMsg');try{var o=JSON.parse(raw);if(!o.farm||!o.cfg)throw 0;S=o;save();draw();return}catch(x){m2.textContent='That text is not a valid backup.';return}}
+  else if(a==='clearEx'){['water','fodder','work','tasks'].forEach(function(k){S[k]=S[k].filter(function(x){return !x.ex})})}
+  save();draw();
+});
+document.addEventListener('change',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;var a=b.getAttribute('data-act'),id=b.getAttribute('data-id');
+  if(a==='toggleTask'){S.tasks.forEach(function(x){if(x.id===id)x.done=b.checked})}
+  else if(a==='bhStatus'){S.boreholes.forEach(function(x){if(x.id===id)x.status=b.value})}
+  else if(a==='bhName'){S.boreholes.forEach(function(x){if(x.id===id)x.name=b.value})}
+  else if(a==='bhYield'){S.boreholes.forEach(function(x){if(x.id===id)x.yield=b.value})}
+  else if(a==='farmName'){S.farm.name=b.value||'Our Game Farm'}
+  else if(a==='lat'){S.farm.lat=parseFloat(b.value)||S.farm.lat;save();loadWeather()}
+  else if(a==='lon'){S.farm.lon=parseFloat(b.value)||S.farm.lon;save();loadWeather()}
+  else if(a==='cfg'){S.cfg[b.getAttribute('data-k')]=parseFloat(b.value)||0}
+  else return;
+  save();document.activeElement&&document.activeElement.blur();draw();
+});
+document.addEventListener('submit',function(e){
+  e.preventDefault();var f=e.target.getAttribute('data-form');if(!f)return;
+  if(f==='task'){S.tasks.push({id:uid(),text:val('tx').trim(),due:val('td'),done:false})}
+  else if(f==='water'){S.water.push({id:uid(),d:val('wd')||today(),pct:Math.max(0,Math.min(100,+val('wp'))),note:val('wn')})}
+  else if(f==='batch'){S.fodder.push({id:uid(),sow:val('bs1')||today(),seed:+val('bk'),days:+val('bd')||S.cfg.growDays,done:false})}
+  else if(f==='feedout'){S.stock=Math.max(0,S.stock-(+val('fo')))}
+  else if(f==='game'){var sp=val('gs'),ty=val('gt'),n=+val('gn'),lab;S.herds.forEach(function(h){if(h.sp===sp){if(ty==='set'){h.n=n;lab='Count '+n}else if(ty==='+'){h.n+=n;lab='+'+n}else{h.n=Math.max(0,h.n-n);lab='-'+n}}});S.gameLog.push({id:uid(),d:val('gd')||today(),sp:sp,label:lab,note:val('gm')})}
+  else if(f==='work'){S.work.push({id:uid(),d:val('wdt')||today(),block:val('wb'),type:val('wt'),note:val('wnn')})}
+  save();draw();
+});
+window.addEventListener('online',function(){loadWeather()});
+window.addEventListener('offline',draw);
+
+load();draw();loadWeather();
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){try{navigator.serviceWorker.register('sw.js').catch(function(){})}catch(e){}}
+})();
+</script>
+
+</body></html>
